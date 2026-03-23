@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="zlib.vcxproj" Id="6fdad72d-5403-4414-a76b-dfb75d155b4a" />
+</Solution>
