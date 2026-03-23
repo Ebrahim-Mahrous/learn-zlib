@@ -365,3 +365,4 @@ FodyWeavers.xsd
 *.vcxproj
 *.vcxproj.filters
 *.slnx
+*.sln
