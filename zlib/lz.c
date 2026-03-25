@@ -90,7 +90,7 @@ static uint32_t lzComputeAdler32(const uint8_t* data, uint64_t size) {
 		s1 = (s1 + data[i]) % 65521;
 		s2 = (s2 + s1) % 65521;
 	}
-	uint32_t adler32 = (s2 * 65536) + s1;
+	uint32_t adler32 = (s2  << 16) + s1;
 
 	return 
 		((adler32 >> 24) & 0x000000FF) |
