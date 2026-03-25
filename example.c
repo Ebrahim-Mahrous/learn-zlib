@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
 	uint64_t size = 0;
 	FILE* file = NULL;
 
-	file = fopen("example2.bin", "rb");
+	file = fopen("example.bin", "rb");
 	
 		fseek(file, 0, SEEK_END);
 		size = ftell(file);
