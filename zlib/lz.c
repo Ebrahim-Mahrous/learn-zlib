@@ -283,6 +283,8 @@ int lzInflate(ZlibReader* z, uint8_t* output, uint64_t outSize)
 		};
 		case 2:
 		{
+			_memset(CL, 0, sizeof(CL));
+			_memset(HUFF_TREE, 0, sizeof(HUFF_TREE));
 			_memset(CLCL_BUFF, 0, sizeof(CLCL_BUFF));
 			_memset(LITLEN_BUFF, 0, sizeof(LITLEN_BUFF));
 			_memset(DIST_BUFF, 0, sizeof(DIST_BUFF));
