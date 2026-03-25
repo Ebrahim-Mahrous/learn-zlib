@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
 	u64 size = 0;
 	FILE* file = NULL;
 
-	file = fopen("output.bin", "rb");
+	file = fopen("example2.bin", "rb");
 	
 		fseek(file, 0, SEEK_END);
 		size = ftell(file);
@@ -43,6 +43,10 @@ int main(int argc, char* argv[]) {
 		printf("%i\n", error);
 
 	puts(output);
+
+	free(output);
+
+	return 0;
 
 	// Example compression
 

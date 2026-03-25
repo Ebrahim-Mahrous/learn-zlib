@@ -89,10 +89,10 @@ static u32 lzComputeAdler32(const byte* data, u64 size) {
 	u16 s2 = 0;
 
 	for (u64 i = 0; i < size; ++i) {
-		s1 += data[i] % 65521;
-		s2 += s1 % 65521;
+		s1 = (s1 + data[i]) % 65521;
+		s2 = (s2 + s1) % 65521;
 	}
-	u32 adler32 = (s2 << 16) + s1;
+	u32 adler32 = (s2 * 65536) + s1;
 
 	return 
 		((adler32 >> 24) & 0x000000FF) |
