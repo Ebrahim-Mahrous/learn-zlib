@@ -3,36 +3,36 @@
 #include "lz_bitstream.h"
 
 typedef struct ZlibHeader {
-	u8 cm : 4;
-	u8 cinfo : 4;
-	u8 fcheck : 5;
-	u8 fdict : 1;
-	u8 flevel : 2;
+	uint8_t cm : 4;
+	uint8_t cinfo : 4;
+	uint8_t fcheck : 5;
+	uint8_t fdict : 1;
+	uint8_t flevel : 2;
 } ZlibHeader;
 
 typedef struct DeflateBlock {
-	u8 BFINAL : 1;
-	u8 BTYPE : 2;
+	uint8_t BFINAL : 1;
+	uint8_t BTYPE : 2;
 } DeflateBlock;
 
 typedef struct {
 	ZlibHeader header;
 	BitReader stream;
-	u32 adler32;
+	uint32_t adler32;
 } ZlibReader;
 
 typedef struct ZlibWriter {
 	ZlibHeader header;
 	BitWriter stream;
-	u64 size;
-	const byte* uncompressed;
+	uint64_t size;
+	const uint8_t* uncompressed;
 } ZlibWriter;
 
 
-int lzInflateInit(ZlibReader* z, const byte* data, u64 size);
-int lzInflate(ZlibReader* z, byte* output, u64 size);
+int lzInflateInit(ZlibReader* z, const uint8_t* data, uint64_t size);
+int lzInflate(ZlibReader* z, uint8_t* output, uint64_t size);
 
-int lzDeflateInit(ZlibWriter* z, const byte* data, u64 size);
-int lzDeflate(ZlibWriter* z, byte* output, u64 size);
+int lzDeflateInit(ZlibWriter* z, const uint8_t* data, uint64_t size);
+int lzDeflate(ZlibWriter* z, uint8_t* output, uint64_t size);
 
 #endif // _ZLIB_H

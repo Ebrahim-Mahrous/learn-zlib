@@ -2,45 +2,35 @@
 #define _BITSTREAM_H
 #include <stdint.h>
 
-typedef uint8_t byte;
-typedef uint64_t u64;
-typedef uint32_t u32;
-typedef uint16_t u16;
-typedef uint8_t u8;
-
-typedef char i8;
-typedef long long i64;
-typedef int i32;
-
 typedef struct BitReader {
-	u64 bitBuff;
-	u64 bitCount;
-	u64 size;
-	const byte* bits;
+	uint64_t bitBuff;
+	uint64_t bitCount;
+	uint64_t size;
+	const uint8_t* bits;
 } BitReader;
 
 typedef struct BitWriter {
-	u64 bitIdx;
-	u64 writeIdx;
-	u64 size;
-	byte* bits;
+	uint64_t bitIdx;
+	uint64_t writeIdx;
+	uint64_t size;
+	uint8_t* bits;
 } BitWriter;
 
-i32 bsReaderInit(BitReader* reader, const byte* data, u64 size);
+int32_t bsReaderInit(BitReader* reader, const uint8_t* data, uint64_t size);
 
-i32 bsGetBits(BitReader* reader, u64 nBits);
+int32_t bsGetBits(BitReader* reader, uint64_t nBits);
 
-i32 bsPeakBits(BitReader* reader, u64 nBits);
+int32_t bsPeakBits(BitReader* reader, uint64_t nBits);
 
-i32 bsGetByte(BitReader* reader);
+int32_t bsGetByte(BitReader* reader);
 
 void bsReaderFlush(BitReader* reader);
 
-i32 bsWriterInit(BitWriter* writer, byte* data, u64 size);
+int32_t bsWriterInit(BitWriter* writer, uint8_t* data, uint64_t size);
 
-i32 bsWriteBits(BitWriter* writer, u64 value, u64 nBits);
+int32_t bsWriteBits(BitWriter* writer, uint64_t value, uint64_t nBits);
 
-i32 bsWriteBytes(BitWriter* writer, const byte* values, u64 size);
+int32_t bsWriteBytes(BitWriter* writer, const uint8_t* values, uint64_t size);
 
 void bsWriterFlush(BitWriter* writer);
 

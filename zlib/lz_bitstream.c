@@ -1,9 +1,9 @@
 #include "lz_bitstream.h"
 #include "lz_debug.h"
 
-#define MASK(x, n) (x & (((u64)(1) << (u64)(n)) - (u64)(1)))
+#define MASK(x, n) (x & (((uint64_t)(1) << (uint64_t)(n)) - (uint64_t)(1)))
 
-i32 bsReaderInit(BitReader* stream, const byte* data, u64 size)
+int32_t bsReaderInit(BitReader* stream, const uint8_t* data, uint64_t size)
 {
 	DEBUG(stream);
 	DEBUG(stream);
@@ -13,7 +13,7 @@ i32 bsReaderInit(BitReader* stream, const byte* data, u64 size)
 	return 1;
 }
 
-i32 bsGetBits(BitReader* stream, u64 n) 
+int32_t bsGetBits(BitReader* stream, uint64_t n) 
 {
 	DEBUG(stream);
 
@@ -25,18 +25,18 @@ i32 bsGetBits(BitReader* stream, u64 n)
 		if (stream->size == 0) {
 			return -2;
 		}
-		u64 b = *stream->bits++;
+		uint64_t b = *stream->bits++;
 		stream->size--;
 		stream->bitBuff |= (b << stream->bitCount);
 		stream->bitCount += 8;
 	}
-	i32 ret = MASK(stream->bitBuff, n);
+	int32_t ret = MASK(stream->bitBuff, n);
 	stream->bitBuff >>= n;
 	stream->bitCount -= n;
 	return ret;
 }
 
-i32 bsPeakBits(BitReader* stream, u64 n) 
+int32_t bsPeakBits(BitReader* stream, uint64_t n) 
 {
 	DEBUG(stream);
 
@@ -48,7 +48,7 @@ i32 bsPeakBits(BitReader* stream, u64 n)
 		if (stream->size == 0) {
 			return -3;
 		}
-		u64 b = *stream->bits++;
+		uint64_t b = *stream->bits++;
 		stream->size--;
 		stream->bitBuff |= (b << stream->bitCount);
 		stream->bitCount += 8;
@@ -56,7 +56,7 @@ i32 bsPeakBits(BitReader* stream, u64 n)
 	return MASK(stream->bitBuff, n);
 }
 
-i32 bsGetByte(BitReader* reader)
+int32_t bsGetByte(BitReader* reader)
 {
 	DEBUG(reader);
 	reader->size--;
@@ -70,7 +70,7 @@ void bsReaderFlush(BitReader* reader)
 	reader->bitCount = 0;
 }
 
-i32 bsWriterInit(BitWriter* writer, byte* output, u64 size)
+int32_t bsWriterInit(BitWriter* writer, uint8_t* output, uint64_t size)
 {
 	DEBUG(writer);
 	DEBUG(output);
@@ -82,7 +82,7 @@ i32 bsWriterInit(BitWriter* writer, byte* output, u64 size)
 	return 1;
 }
 
-i32 bsWriteBits(BitWriter* writer, u64 value, u64 nBits)
+int32_t bsWriteBits(BitWriter* writer, uint64_t value, uint64_t nBits)
 {
 	DEBUG(writer);
 	DEBUG(writer->bits);
@@ -90,7 +90,7 @@ i32 bsWriteBits(BitWriter* writer, u64 value, u64 nBits)
 	if (nBits == 0) return 1; // not an error
 	if (nBits > 64) return -2;
 	do {
-		u8 bit = value & 0x01;
+		uint8_t bit = value & 0x01;
 		writer->bits[writer->writeIdx] |= (bit << writer->bitIdx++);
 		if (writer->bitIdx >= 8) {
 			if (++writer->writeIdx >= writer->size) {
@@ -104,14 +104,14 @@ i32 bsWriteBits(BitWriter* writer, u64 value, u64 nBits)
 	return 1;
 }
 
-i32 bsWriteBytes(BitWriter* writer, const byte* values, u64 size)
+int32_t bsWriteBytes(BitWriter* writer, const uint8_t* values, uint64_t size)
 {
 	DEBUG(writer);
 	DEBUG(writer->bits);
 	DEBUG(values);
 
 	if (size == 0) return 1;
-	for (u64 i = 0; i < size; ++i) {
+	for (uint64_t i = 0; i < size; ++i) {
 		if (writer->writeIdx >= writer->size) {
 			return -3;
 		}
