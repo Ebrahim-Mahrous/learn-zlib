@@ -82,6 +82,12 @@ typedef struct HuffTable {
 	HuffEntry *tree;
 } HuffTable;
 
+static inline void _memset(void* p, uint32_t val, uint64_t size) {
+	for (uint64_t i = 0; i < size; ++i) {
+		((uint8_t*)p)[i] = val;
+	}
+}
+
 static uint32_t lzComputeAdler32(const uint8_t* data, uint64_t size) {
 	uint32_t s1 = 1;
 	uint32_t s2 = 0;
@@ -193,12 +199,11 @@ int lzInflate(ZlibReader* z, uint8_t* output, uint64_t outSize)
 	DEBUG(outSize);
 	DEBUG(z->stream.bits);
 
-	static uint8_t CL[19] = { 0 };
-	static uint8_t HUFF_TREE[320] = { 0 };
-
-	static HuffEntry CLCL_BUFF[19] = { 0 };
-	static HuffEntry LITLEN_BUFF[286] = { 0 };
-	static HuffEntry DIST_BUFF[32] = { 0 };
+	uint8_t CL[19] = { 0 };
+	uint8_t HUFF_TREE[320] = { 0 };
+	HuffEntry CLCL_BUFF[19] = { 0 };
+	HuffEntry LITLEN_BUFF[286] = { 0 };
+	HuffEntry DIST_BUFF[32] = { 0 };
 
 #ifdef _DEBUG
 	int32_t error = 0;
@@ -238,6 +243,9 @@ int lzInflate(ZlibReader* z, uint8_t* output, uint64_t outSize)
 		}
 		case 1:
 		{
+			_memset(LITLEN_BUFF, 0, sizeof(LITLEN_BUFF));
+			_memset(DIST_BUFF, 0, sizeof(DIST_BUFF));
+
 			HuffTable litlen = { .size = sizeof(FIXED_LITLEN_CL), .tree =  LITLEN_BUFF};
 			HuffTable dist = { .size = sizeof(FIXED_DIST_CL), .tree = DIST_BUFF};
 
@@ -275,6 +283,10 @@ int lzInflate(ZlibReader* z, uint8_t* output, uint64_t outSize)
 		};
 		case 2:
 		{
+			_memset(CLCL_BUFF, 0, sizeof(CLCL_BUFF));
+			_memset(LITLEN_BUFF, 0, sizeof(LITLEN_BUFF));
+			_memset(DIST_BUFF, 0, sizeof(DIST_BUFF));
+
 			uint32_t HLIT = 0;
 			uint32_t HDIST = 0;
 			uint32_t HCLEN = 0;
