@@ -77,11 +77,9 @@ typedef struct HuffEntry {
 	uint32_t length;
 } HuffEntry;
 
-#define _HuffTable(n) struct { uint64_t size; HuffEntry tree[n]; }
-
 typedef struct HuffTable {
 	uint64_t size;
-	HuffEntry tree[];
+	HuffEntry *tree;
 } HuffTable;
 
 static uint32_t lzComputeAdler32(const uint8_t* data, uint64_t size) {
@@ -195,6 +193,13 @@ int lzInflate(ZlibReader* z, uint8_t* output, uint64_t outSize)
 	DEBUG(outSize);
 	DEBUG(z->stream.bits);
 
+	static uint8_t CL[19] = { 0 };
+	static uint8_t HUFF_TREE[320] = { 0 };
+
+	static HuffEntry CLCL_BUFF[19] = { 0 };
+	static HuffEntry LITLEN_BUFF[286] = { 0 };
+	static HuffEntry DIST_BUFF[32] = { 0 };
+
 #ifdef _DEBUG
 	int32_t error = 0;
 #endif // _DEBUG
@@ -233,11 +238,9 @@ int lzInflate(ZlibReader* z, uint8_t* output, uint64_t outSize)
 		}
 		case 1:
 		{
-			_HuffTable(sizeof(FIXED_LITLEN_CL)) litlen = { 0 };
-			_HuffTable(sizeof(FIXED_DIST_CL)) dist = { 0 };
+			HuffTable litlen = { .size = sizeof(FIXED_LITLEN_CL), .tree =  LITLEN_BUFF};
+			HuffTable dist = { .size = sizeof(FIXED_DIST_CL), .tree = DIST_BUFF};
 
-			litlen.size = sizeof(FIXED_LITLEN_CL);
-			dist.size = sizeof(FIXED_DIST_CL);
 			hBuild((HuffTable*)&litlen, FIXED_LITLEN_CL);
 			hBuild((HuffTable*)&dist, FIXED_DIST_CL);
 
@@ -272,28 +275,21 @@ int lzInflate(ZlibReader* z, uint8_t* output, uint64_t outSize)
 		};
 		case 2:
 		{
-			uint8_t CL[19] = { 0 };
-			uint8_t HUFF_TREE[320] = { 0 };
-
 			uint32_t HLIT = 0;
 			uint32_t HDIST = 0;
 			uint32_t HCLEN = 0;
 
-			_HuffTable(19) clcl = { 0 };
-			_HuffTable(286) litlen = { 0 };
-			_HuffTable(32) dist = { 0 };
-
-			CHECK((uint32_t)HLIT = (bsGetBits(&z->stream, 5) + 257), error);
-			CHECK((uint32_t)HDIST = (bsGetBits(&z->stream, 5) + 1), error);
-			CHECK((uint32_t)HCLEN = (bsGetBits(&z->stream, 4) + 4), error);
+			CHECK(HLIT = (bsGetBits(&z->stream, 5) + 257), error);
+			CHECK(HDIST = (bsGetBits(&z->stream, 5) + 1), error);
+			CHECK(HCLEN = (bsGetBits(&z->stream, 4) + 4), error);
 
 			if (HLIT > 286 || HDIST > 32 || HCLEN > 19) {
 				return -4;
 			}
 
-			litlen.size = HLIT;
-			dist.size = HDIST;
-			clcl.size = 19;
+			HuffTable clcl = { .size = 19, .tree = CLCL_BUFF };
+			HuffTable litlen = { .size = HLIT, .tree = LITLEN_BUFF};
+			HuffTable dist = { .size = HDIST, .tree = DIST_BUFF};
 
 			for (uint32_t i = 0; i < HCLEN; ++i) {
 				CHECK(CL[CL_ORDER[i]] = (uint8_t)bsGetBits(&z->stream, 3), error);
