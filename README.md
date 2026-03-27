@@ -1,6 +1,9 @@
-# learn-zlib
+# Learn: zlib
 A tiny zlib implementation for personal learning.
 
 # Features
-- Only supports BTYPE 00 (No compression) but produces a valid zlib stream for any given data.
-- Supports all decompression schemes.
+- `lzInflate`: Supports all decompression schemes. It can decompress any zlib stream.
+- `lzDeflate`: Only supports BTYPE 00 (No compression) but produces a valid zlib stream for any given data.
+
+# Examples
+There is an example in `example.c`.
