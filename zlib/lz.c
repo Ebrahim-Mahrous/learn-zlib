@@ -82,11 +82,26 @@ typedef struct HuffTable {
 	HuffEntry *tree;
 } HuffTable;
 
-static inline void _memset(void* p, uint32_t val, uint64_t size) {
-	for (uint64_t i = 0; i < size; ++i) {
-		((uint8_t*)p)[i] = val;
+#ifdef _WIN32 
+void* memset(
+	void* dest,
+	int c,
+	size_t count
+);
+#pragma intrinsic(memset)
+#else
+void* memset(
+	void* dest,
+	int c,
+	size_t count
+) 
+{
+	for (uint64_t i = 0; i < count; ++i) {
+		((uint8_t*)dest)[i] = c;
 	}
+	return dest;
 }
+#endif
 
 static uint32_t lzComputeAdler32(const uint8_t* data, uint64_t size) {
 	uint32_t s1 = 1;
@@ -243,8 +258,8 @@ int lzInflate(ZlibReader* z, uint8_t* output, uint64_t outSize)
 		}
 		case 1:
 		{
-			_memset(LITLEN_BUFF, 0, sizeof(LITLEN_BUFF));
-			_memset(DIST_BUFF, 0, sizeof(DIST_BUFF));
+			memset(LITLEN_BUFF, 0, sizeof(LITLEN_BUFF));
+			memset(DIST_BUFF, 0, sizeof(DIST_BUFF));
 
 			HuffTable litlen = { .size = sizeof(FIXED_LITLEN_CL), .tree =  LITLEN_BUFF};
 			HuffTable dist = { .size = sizeof(FIXED_DIST_CL), .tree = DIST_BUFF};
@@ -283,11 +298,11 @@ int lzInflate(ZlibReader* z, uint8_t* output, uint64_t outSize)
 		};
 		case 2:
 		{
-			_memset(CL, 0, sizeof(CL));
-			_memset(HUFF_TREE, 0, sizeof(HUFF_TREE));
-			_memset(CLCL_BUFF, 0, sizeof(CLCL_BUFF));
-			_memset(LITLEN_BUFF, 0, sizeof(LITLEN_BUFF));
-			_memset(DIST_BUFF, 0, sizeof(DIST_BUFF));
+			memset(CL, 0, sizeof(CL));
+			memset(HUFF_TREE, 0, sizeof(HUFF_TREE));
+			memset(CLCL_BUFF, 0, sizeof(CLCL_BUFF));
+			memset(LITLEN_BUFF, 0, sizeof(LITLEN_BUFF));
+			memset(DIST_BUFF, 0, sizeof(DIST_BUFF));
 
 			uint32_t HLIT = 0;
 			uint32_t HDIST = 0;
