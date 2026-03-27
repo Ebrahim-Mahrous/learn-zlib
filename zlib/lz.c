@@ -214,11 +214,11 @@ int lzInflate(ZlibReader* z, uint8_t* output, uint64_t outSize)
 	DEBUG(outSize);
 	DEBUG(z->stream.bits);
 
-	uint8_t CL[19] = { 0 };
-	uint8_t HUFF_TREE[320] = { 0 };
-	HuffEntry CLCL_BUFF[19] = { 0 };
-	HuffEntry LITLEN_BUFF[286] = { 0 };
-	HuffEntry DIST_BUFF[32] = { 0 };
+	static uint8_t CL[19] = { 0 };
+	static uint8_t HUFF_TREE[320] = { 0 };
+	static HuffEntry CLCL_BUFF[19] = { 0 };
+	static HuffEntry LITLEN_BUFF[286] = { 0 };
+	static HuffEntry DIST_BUFF[32] = { 0 };
 
 #ifdef _DEBUG
 	int32_t error = 0;
