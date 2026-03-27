@@ -29,10 +29,10 @@ typedef struct ZlibWriter {
 } ZlibWriter;
 
 
-int lzInflateInit(ZlibReader* z, const uint8_t* data, uint64_t size);
-int lzInflate(ZlibReader* z, uint8_t* output, uint64_t size);
+int32_t lzInflateInit(ZlibReader* z, const uint8_t* data, uint64_t size);
+int32_t lzInflate(ZlibReader* z, uint8_t* output, uint64_t size);
 
-int lzDeflateInit(ZlibWriter* z, const uint8_t* data, uint64_t size);
-int lzDeflate(ZlibWriter* z, uint8_t* output, uint64_t size);
+int32_t lzDeflateInit(ZlibWriter* z, const uint8_t* data, uint64_t size);
+int32_t lzDeflate(ZlibWriter* z, uint8_t* output, uint64_t *size);
 
 #endif // _ZLIB_H

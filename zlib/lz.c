@@ -85,14 +85,14 @@ typedef struct HuffTable {
 #ifdef _WIN32 
 void* memset(
 	void* dest,
-	int c,
+	int32_t c,
 	size_t count
 );
 #pragma intrinsic(memset)
 #else
 void* memset(
 	void* dest,
-	int c,
+	int32_t c,
 	size_t count
 ) 
 {
@@ -161,7 +161,7 @@ static void hBuild(HuffTable* table, const uint8_t* codeLens) {
 	}
 }
 
-static int hDecode(HuffTable* table, BitReader* bs) {
+static int32_t hDecode(HuffTable* table, BitReader* bs) {
 	DEBUG(table);
 	DEBUG(bs);
 
@@ -169,7 +169,7 @@ static int hDecode(HuffTable* table, BitReader* bs) {
 	uint64_t size = table->size;
 	HuffEntry* tree = table->tree;
 
-	for (int i = 0; i < size; ++i) {
+	for (int32_t i = 0; i < size; ++i) {
 		uint32_t len = tree[i].length;
 		if (!len) {
 			continue;
@@ -185,7 +185,7 @@ static int hDecode(HuffTable* table, BitReader* bs) {
 	return 1;
 }
 
-int lzInflateInit(ZlibReader* z, const uint8_t* data, uint64_t size) {
+int32_t lzInflateInit(ZlibReader* z, const uint8_t* data, uint64_t size) {
 	DEBUG(z);
 	DEBUG(data);
 
@@ -207,7 +207,7 @@ int lzInflateInit(ZlibReader* z, const uint8_t* data, uint64_t size) {
 	return 1;
 }
 
-int lzInflate(ZlibReader* z, uint8_t* output, uint64_t outSize)
+int32_t lzInflate(ZlibReader* z, uint8_t* output, uint64_t outSize)
 {
 	DEBUG(z);
 	DEBUG(output);
@@ -406,7 +406,7 @@ int lzInflate(ZlibReader* z, uint8_t* output, uint64_t outSize)
 	return 1;
 }
 
-int lzDeflateInit(ZlibWriter* z, const uint8_t* data, uint64_t size)
+int32_t lzDeflateInit(ZlibWriter* z, const uint8_t* data, uint64_t size)
 {
 	DEBUG(z);
 	DEBUG(data);
@@ -418,18 +418,16 @@ int lzDeflateInit(ZlibWriter* z, const uint8_t* data, uint64_t size)
 	return 1;
 }
 
-int lzDeflate(ZlibWriter* z, uint8_t* output, uint64_t outSize)
+int32_t lzDeflate(ZlibWriter* z, uint8_t* output, uint64_t *outSize)
 {
 	DEBUG(z);
 	DEBUG(output);
-	DEBUG(outSize);
-#ifdef _DEBUG
-	int32_t error = 0;
-#endif // _DEBUG
+	DEBUG(*outSize);
 
+	int32_t error = 0;
 	uint64_t outIdx = 0;
 	uint64_t remaining = z->size;
-	CHECK(bsWriterInit(&z->stream, output, outSize), error);
+	CHECK(bsWriterInit(&z->stream, output, *outSize), error);
 
 	z->header.cm = 0x08;
 	z->header.cinfo = 0x07;
@@ -441,7 +439,7 @@ int lzDeflate(ZlibWriter* z, uint8_t* output, uint64_t outSize)
 
 	uint8_t BFINAL = 0;
 	do {
-		BFINAL = z->size < FIXED_BLOCK_SIZE;
+		BFINAL = remaining < FIXED_BLOCK_SIZE;
 
 		DeflateBlock block = { 0 };
 		block.BFINAL = BFINAL;
@@ -450,14 +448,16 @@ int lzDeflate(ZlibWriter* z, uint8_t* output, uint64_t outSize)
 		CHECK(bsWriteBits(&z->stream, *(uint64_t*)&block, 3), error);
 		bsWriterFlush(&z->stream);
 
-		uint16_t LEN = (uint16_t)BFINAL ? (uint16_t)z->size : FIXED_BLOCK_SIZE;
+		uint16_t LEN = (uint16_t)BFINAL ? ((uint16_t)remaining) : FIXED_BLOCK_SIZE;
 		uint16_t NLEN = ~LEN;
 		remaining -= LEN;
 
 		CHECK(bsWriteBits(&z->stream, LEN, 16), error);
 		CHECK(bsWriteBits(&z->stream, NLEN, 16), error);
 
-		CHECK(bsWriteBytes(&z->stream, z->uncompressed + outIdx, LEN), error);
+		if ((error = bsWriteBytes(&z->stream, &z->uncompressed[outIdx], LEN)) < 0) {
+			return error;
+		}
 		outIdx += LEN;
 
 	} while (!BFINAL);
@@ -466,5 +466,6 @@ int lzDeflate(ZlibWriter* z, uint8_t* output, uint64_t outSize)
 
 	CHECK(bsWriteBits(&z->stream, adler32, 32), error);
 
+	*outSize = z->stream.writeIdx;
 	return 1;
 }

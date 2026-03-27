@@ -1,6 +1,27 @@
 #include "lz_bitstream.h"
 #include "lz_debug.h"
 
+#ifdef _WIN32 
+void* memcpy(
+	void* dest,
+	const void* src,
+	size_t count
+);
+#pragma intrinsic(memcpy)
+#else 
+void* memcpy(
+	void* dest,
+	const void* src,
+	size_t count
+)
+{
+	for (size_t i = 0; i < count; ++i) {
+		dest[i] = src[i];
+	}
+	return dest;
+}
+#endif
+
 #define MASK(x, n) (x & (((uint64_t)(1) << (uint64_t)(n)) - (uint64_t)(1)))
 
 int32_t bsReaderInit(BitReader* stream, const uint8_t* data, uint64_t size)
@@ -59,6 +80,7 @@ int32_t bsPeakBits(BitReader* stream, uint64_t n)
 int32_t bsGetByte(BitReader* reader)
 {
 	DEBUG(reader);
+	if (reader->size <= 0) return -3;
 	reader->size--;
 	return *reader->bits++;
 }
@@ -110,13 +132,16 @@ int32_t bsWriteBytes(BitWriter* writer, const uint8_t* values, uint64_t size)
 	DEBUG(writer->bits);
 	DEBUG(values);
 
-	if (size == 0) return 1;
-	for (uint64_t i = 0; i < size; ++i) {
-		if (writer->writeIdx >= writer->size) {
-			return -3;
-		}
-		writer->bits[writer->writeIdx++] = values[i];
+	if (size == 0) {
+		return 1;
 	}
+
+	if ((writer->writeIdx + size) >= writer->size) {
+		return -3;
+	}
+
+	memcpy(&writer->bits[writer->writeIdx], values, size);
+	writer->writeIdx += size;
 
 	return 1;
 }
