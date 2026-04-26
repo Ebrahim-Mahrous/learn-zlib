@@ -50,7 +50,7 @@ int32_t main(int32_t argc, char* argv[]) {
 
 	// Example compression
 
-	static uint8_t input[65539] = { 0 };
+	static uint8_t input[1 << 16] = { 0 };
 	static uint8_t output[(1 << 17) + 1024] = { 0 };
 
 	memset(input, 'q', sizeof(input));
@@ -70,6 +70,9 @@ int32_t main(int32_t argc, char* argv[]) {
 
 		if (!file) return -10;
 		fwrite(output, 1, outSize, file);
+		//for (uint64_t i = 0; i < outSize; ++i) {
+		//	fprintf(file, "%02x", output[i]);
+		//}
 
 	fclose(file);
 

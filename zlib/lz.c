@@ -435,13 +435,13 @@ int32_t lzDeflate(ZlibWriter* z, uint8_t* output, uint64_t *outSize)
 	z->header.fdict = 0x00;
 	z->header.flevel = 0x00;
 
-	CHECK(bsWriteBits(&z->stream, *(uint64_t*)&z->header, 16), error);
+	CHECK(bsWriteBytes(&z->stream, (uint8_t*)&z->header, 2), error);
 
 	uint8_t BFINAL = 0;
 	do {
 		BFINAL = remaining < FIXED_BLOCK_SIZE;
 
-		DeflateBlock block = { 0 };
+		DeflateBlockHeader block = { 0 };
 		block.BFINAL = BFINAL;
 		block.BTYPE = 0x00;
 
@@ -452,8 +452,8 @@ int32_t lzDeflate(ZlibWriter* z, uint8_t* output, uint64_t *outSize)
 		uint16_t NLEN = ~LEN;
 		remaining -= LEN;
 
-		CHECK(bsWriteBits(&z->stream, LEN, 16), error);
-		CHECK(bsWriteBits(&z->stream, NLEN, 16), error);
+		CHECK(bsWriteBytes(&z->stream, (uint8_t*)&LEN, 2), error);
+		CHECK(bsWriteBytes(&z->stream, (uint8_t*)&NLEN, 2), error);
 
 		if ((error = bsWriteBytes(&z->stream, &z->uncompressed[outIdx], LEN)) < 0) {
 			return error;

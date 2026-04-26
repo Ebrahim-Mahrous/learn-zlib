@@ -10,10 +10,10 @@ typedef struct ZlibHeader {
 	uint8_t flevel : 2;
 } ZlibHeader;
 
-typedef struct DeflateBlock {
+typedef struct DeflateBlockHeader {
 	uint8_t BFINAL : 1;
 	uint8_t BTYPE : 2;
-} DeflateBlock;
+} DeflateBlockHeader;
 
 typedef struct {
 	ZlibHeader header;
